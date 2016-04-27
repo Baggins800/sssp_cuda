@@ -1,5 +1,13 @@
 **SSSP implementation with CUDA**
 =================================
+Hardware Requirements
+---------------------
+```
+Nvidia device with cuda compute capability of asleast 2.x.
+CPU with x64 architecture.
+Atleast 4096MiB host Random access memory.
+Atleast 20GiB free harddrive space.
+```
 Software Requirements
 ---------------------
 Linux is required to use the scripts.
