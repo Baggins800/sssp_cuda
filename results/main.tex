@@ -1,0 +1,52 @@
+\documentclass{article}
+\usepackage{pgfplotstable}
+\usepackage{pgfplots}
+\pagestyle{empty}
+\begin{document}
+
+%\pgfplotstabletypeset{data.dat}
+ 
+\vspace{1cm}
+  \begin{tikzpicture}
+    \begin{axis}[
+    xlabel=vector size (N),
+    ylabel=time(s)] 
+      %\addplot table [y=P, x=$Q_{Original}$]{dijkstra_original.out};
+      \addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
+      \addplot table [y=P, x=$Q_{CUDA}$]{dijkstra_parallel.out};
+      \addplot table [y=P, x=$Q_{CUDA_fastest}$]{dijkstra_parallel_fastest.out};
+ 
+     % \addlegendentry{$Q_{Original}$ Serial Dijkstra}
+      \addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
+      \addlegendentry{$Q_{CUDA}$ CUDA}
+      \addlegendentry{$Q_{CUDA_fastest}$ CUDA}
+    \end{axis}
+  \end{tikzpicture}
+ 
+\vspace{1cm}
+ \begin{tikzpicture}
+    \begin{axis}[
+    xlabel=vector size (N),
+    ylabel=time(s)] 
+      \addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
+      \addplot table [y=P, x=$Q_{CUDA}$]{dijkstra_parallel.out};
+      \addplot table [y=P, x=$Q_{CUDA_fastest}$]{dijkstra_parallel_fastest.out};
+      \addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
+      \addlegendentry{$Q_{CUDA}$ CUDA}
+      \addlegendentry{$Q_{CUDA_fastest}$ CUDA}
+    \end{axis}
+  \end{tikzpicture}
+ 
+\vspace{1cm}
+\begin{tikzpicture}
+    \begin{axis}[
+    xlabel=vector size (N),
+    ylabel=time(s)] 
+      \addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
+      \addplot table [y=P, x=$Q_{CUDA_fastest}$]{dijkstra_parallel_fastest.out};
+      \addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
+      \addlegendentry{$Q_{CUDA_fastest}$ CUDA}
+    \end{axis}
+  \end{tikzpicture}
+ 
+  \end{document}

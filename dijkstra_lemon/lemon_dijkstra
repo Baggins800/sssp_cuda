@@ -1,0 +1,12 @@
+g++ main.cpp -O2
+MAX=$1
+FILE=$2
+STEPS=1
+rm -f $FILE
+echo "P \$Q_{Lemon}\$" >> $FILE
+while [ $STEPS -le $MAX ]
+do
+  echo -ne "$STEPS out of $MAX \033[0K\r"
+  ./a.out < "data/$STEPS.in" >> $FILE
+  (( STEPS++ ))
+done

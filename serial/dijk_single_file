@@ -1,0 +1,3 @@
+g++ sssp.cpp -O2
+./a.out < "data/1.in"
+

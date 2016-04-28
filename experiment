@@ -1,0 +1,52 @@
+MAX=$1
+DEGREE=$2
+STEPS=$3
+START=1
+FILE1="dijkstra_parallel.out"
+FILE2="dijkstra_original.out"
+FILE3="dijkstra_lemon.out"
+FILE4="dijkstra_parallel_fastest.out"
+cd input
+rm -r data
+rm -f ../results/$FILE1 ../results/$FILE2 ../results/$FILE3 ../results/$FILE4
+mkdir data
+echo "GENERATING DATA"
+sh executein $MAX $DEGREE $STEPS
+cd ..
+#cp -r input/data serial
+cp -r input/data parallel
+cp -r input/data dijkstra_lemon
+cp -r input/data parallel_fastest
+# parallel
+cd parallel
+echo "CUDA SSSP CALCULATING"
+sh par_multi_file $MAX $FILE1
+mv $FILE1 ../results
+cd ..
+
+# parallel fastest
+cd parallel_fastest
+echo "CUDA FASTEST SSSP CALCULATING"
+sh par_multi_file $MAX $FILE4
+mv $FILE4 ../results
+#cd ..
+
+# serial original
+#cd serial
+#echo "DIJKSTRA ORIGINAL CALCULATING"
+#sh dijk_multi_file $MAX $FILE2
+#mv $FILE2 ../results
+# lemon dijkstra
+cd ..
+cd dijkstra_lemon
+echo "DIJKSTRA LEMON CALCULATING"
+sh lemon_dijkstra $MAX $FILE3
+mv $FILE3 ../results
+echo "COMPLETED !!!"
+cd ..
+cd results
+pdflatex main.tex > tex.log
+rm -f *.aux *.dvi *.fls *.log *.fdb*
+cp main.pdf ../
+cd ..
+evince main.pdf 2> /dev/null & 

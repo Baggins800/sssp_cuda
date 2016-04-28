@@ -1,0 +1,15 @@
+nvcc sssp.cpp -O2
+START=1
+MAX=$1
+FILE=$2
+if [ -f $FILE ]; then
+  rm $FILE
+fi
+echo "P \$Q_{Original}\$" >> $FILE
+while [ $START -le $MAX ]
+do
+echo -ne "$START out of $MAX \033[0K\r"
+  ./a.out < "data/$START.in" >> $FILE
+  (( START++ ))
+done
+
