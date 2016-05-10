@@ -1,3 +1,6 @@
+# texts
+*.txt
+*.in
 # exes
 *.out
 # Compiled Object files
