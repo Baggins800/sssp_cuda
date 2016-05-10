@@ -3,7 +3,7 @@
 #include <vector>
 #include <ctime>
 #include <stdio.h>
-#define TPB 1024
+#define TPB 256
 #define INF 9999
 
 using namespace std;
@@ -49,87 +49,52 @@ __global__ void relax_f(unsigned int *c_dev,
     }
   }
 }
-
-__global__ void print( unsigned int *c_dev, unsigned int N) {
-  unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
-  if (tid < N) 
-    printf("index %d %d\n", tid, c_dev[tid]);
-}
 __global__ void update(unsigned int * c_dev,
                        bool *f_dev, bool *u_dev,
-                       unsigned int *mssp, unsigned int N) {
+                       unsigned int mssp, unsigned int N) {
   unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid < N) {
     f_dev[tid] = false;
-    if (c_dev[tid] == mssp[0]) {
+    if (c_dev[tid] == mssp) {
       u_dev[tid] = false;
       f_dev[tid] = true;
     }
   }
 }
-
 __global__ void minimum(unsigned int *c_dev,
-                        bool *u_dev, unsigned int *mssp, unsigned int N) {
+                        bool *u_dev, unsigned int &mssp, unsigned int N) {
   unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid < N) {
-    if (u_dev[tid] && (c_dev[tid] < *mssp)) {
-      atomicMin(mssp, c_dev[tid]); 
+    if (u_dev[tid] && (c_dev[tid] < mssp)) {
+      atomicMin(&mssp, c_dev[tid]);
     }
   }
 }
-
-void DA2CF(unsigned int *c_dev, 
+__device__ unsigned int mssp = 0;
+__global__ void DA2CF(unsigned int *c_dev, 
            bool *u_dev, bool *f_dev, 
            unsigned int *e_dev, 
            unsigned int *w_dev,
            Node *v_dev,
            unsigned int N, vector<unsigned int> &P) {
   unsigned int extrablock = N % TPB > 0 ? 1 : 0;
-  unsigned int *mssp_dev;
-  unsigned int mssp_dev_val[1] = {INF};
-  cudaMalloc( (void**)&mssp_dev, sizeof(unsigned int) );
-
+  unsigned int counter = 0;
   intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
-  unsigned int mssp = 0;
-  unsigned int count = 0;
+  //printf("%d\n",(int) f_dev[0]);
   while (mssp != INF) {
-    cudaMemcpy( mssp_dev, mssp_dev_val, sizeof(unsigned int), cudaMemcpyHostToDevice);
+    counter++;
+    mssp = INF;
     relax_f<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
-    minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp_dev, N);
-    cudaMemcpy( &mssp, mssp_dev, sizeof(unsigned int), cudaMemcpyDeviceToHost);
-    update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp_dev, N);
-    count++;
+  cudaDeviceSynchronize(); 
+    minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp, N);
+    cudaDeviceSynchronize();
+    __syncthreads();
+    update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp, N);
+    __syncthreads();
   }
-  //printf("%d\n", count);
-  cudaFree(&mssp_dev);
+  //printf("%d\n", counter);
 }
 
-void DA2CF_min(unsigned int *c_dev, 
-           bool *u_dev, bool *f_dev, 
-           unsigned int *e_dev, 
-           unsigned int *w_dev,
-           Node *v_dev,
-           unsigned int N,
-           vector<unsigned int> P) {
-  unsigned int extrablock = N % TPB > 0 ? 1 : 0;
-  unsigned int *mssp_dev;
-  unsigned int mssp_dev_val[1] = {INF};
-  cudaMalloc( (void**)&mssp_dev, sizeof(unsigned int) );
-
-  intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
-  unsigned int mssp = 0;
-  unsigned int count = 0;
-  for (int i = 0; i < P.size(); i++) {
-    mssp_dev_val[0] = P[i];
-    cudaMemcpy( mssp_dev, mssp_dev_val, sizeof(unsigned int), cudaMemcpyHostToDevice);
-    relax_f<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
-    //minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp_dev, N);
-    cudaMemcpy( &mssp, mssp_dev, sizeof(unsigned int), cudaMemcpyDeviceToHost);
-    update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp_dev, N);
-    count++;
-  }
-  cudaFree(&mssp_dev);
-}
 int main() {
   unsigned int N;
   unsigned int degree;
@@ -161,6 +126,10 @@ int main() {
     v_host[z].adj = dec;
     dec--;
   }
+  
+
+  
+
   // allocate frontiers, unresolved and cost vectors on the GPU
   cudaMalloc( (void**)&c_dev, N * sizeof(unsigned int) ); 
   cudaMalloc( (void**)&f_dev, N * sizeof(bool) ); 
@@ -172,20 +141,20 @@ int main() {
   // copy data to GPU memory
   cudaMemcpy( v_dev, v_host.data(), N * sizeof(Node), cudaMemcpyHostToDevice);
   cudaMemcpy( e_dev, e_host.data(), M * sizeof(unsigned int), cudaMemcpyHostToDevice);
-  cudaMemcpy( w_dev, w_host.data(), M * sizeof(unsigned int), cudaMemcpyHostToDevice);
 
-  // execute dijkstra compound frontiers
   clock_t st = clock();
-  DA2CF(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
+
+  cudaDeviceSynchronize();
+  cudaMemcpy( w_dev, w_host.data(), M * sizeof(unsigned int), cudaMemcpyHostToDevice);
+  // execute dijkstra compound frontiers
+
+
+
+  DA2CF<<<1,1>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
   clock_t en = clock();
   double res = (double)(en - st) / CLOCKS_PER_SEC;
 
-  // execute dijkstra compound frontiers
-  //clock_t st1 = clock();
-  //DA2CF_min(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
-  //clock_t en1 = clock();
-  //double res1 = (double)(en1 - st1) / CLOCKS_PER_SEC;
-
+  cudaDeviceSynchronize();
   cout << res << " " << N << endl;
 
   // free allocated memory on the GPU

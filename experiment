@@ -6,6 +6,7 @@ FILE1="dijkstra_parallel.out"
 FILE2="dijkstra_original.out"
 FILE3="dijkstra_lemon.out"
 FILE4="dijkstra_parallel_fastest.out"
+FILE5="dynamic_parallelism.out"
 cd input
 rm -r data
 rm -f ../results/$FILE1 ../results/$FILE2 ../results/$FILE3 ../results/$FILE4
@@ -13,15 +14,23 @@ mkdir data
 echo "GENERATING DATA"
 sh executein $MAX $DEGREE $STEPS
 cd ..
-#cp -r input/data serial
+cp -r input/data serial
 cp -r input/data parallel
 cp -r input/data dijkstra_lemon
 cp -r input/data parallel_fastest
+cp -r input/data dynamic_parallelism
 # parallel
 cd parallel
 echo "CUDA SSSP CALCULATING"
 sh par_multi_file $MAX $FILE1
 mv $FILE1 ../results
+cd ..
+
+# dynamic parallelism
+cd dynamic_parallelism
+echo "CUDA DYNAMIC PARALLELISM SSSP CALCULATING"
+sh par_multi_file $MAX $FILE5
+mv $FILE5 ../results
 cd ..
 
 # parallel fastest

@@ -49,7 +49,6 @@ __global__ void relax_f(unsigned int *c_dev,
     }
   }
 }
-
 __global__ void print( unsigned int *c_dev, unsigned int N) {
   unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid < N) 
@@ -67,7 +66,6 @@ __global__ void update(unsigned int * c_dev,
     }
   }
 }
-
 __global__ void minimum(unsigned int *c_dev,
                         bool *u_dev, unsigned int *mssp, unsigned int N) {
   unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -100,7 +98,6 @@ void DA2CF(unsigned int *c_dev,
     update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp_dev, N);
     count++;
   }
-  //printf("%d\n", count);
   cudaFree(&mssp_dev);
 }
 
