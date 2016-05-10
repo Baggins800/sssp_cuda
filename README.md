@@ -3,7 +3,7 @@
 Hardware Requirements
 ---------------------
 ```
-Nvidia device with cuda compute capability of asleast 2.x.
+Nvidia device with cuda compute capability of asleast 3.5 (Kepler, Maxwell and better).
 CPU with x64 architecture.
 Atleast 4096MiB host Random access memory.
 Atleast 20GiB free harddrive space.
