@@ -1,4 +1,4 @@
-nvcc sssp_par.cu -O2
+nvcc --compiler-options -std=c++98 sssp_par.cu -O2
 START=1
 MAX=$1
 FILE=$2
