@@ -9,8 +9,8 @@
 #include <thrust/device_malloc.h>
 #include <thrust/device_free.h>
 #include <thrust/device_vector.h>
-#define TPB 512
-#define INF 9999
+#define TPB 1024
+#define INF 99999999
 
 using namespace std;
 struct Node {
@@ -170,11 +170,16 @@ int main() {
   cudaMemcpy( w_dev, w_host.data(), M * sizeof(unsigned int), cudaMemcpyHostToDevice);
 
   // execute dijkstra compound frontiers
-  clock_t st = clock();
+  cudaEvent_t start, stop;
+  float elapsedTime;
+  cudaEventCreate(&start);
+  cudaEventRecord(start, 0);
   DA2CF(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
-  clock_t en = clock();
-  double res = (double)(en - st) / CLOCKS_PER_SEC;
-  cout << res << " " << N << endl;
+  cudaEventCreate(&stop);
+  cudaEventRecord(stop,0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&elapsedTime, start, stop);
+  cout << elapsedTime / 1000.0f << " " << N << endl;
 
   // free allocated memory on the GPU
   cudaFree(c_dev);

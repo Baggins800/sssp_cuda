@@ -6,6 +6,9 @@
 #include <vector>
 #include <string>
 #include <ctime>
+#include<lemon/time_measure.h>
+#include <chrono>
+
 using namespace std;
 using namespace lemon;
 void read_graph(std::string filename);
@@ -40,15 +43,19 @@ int main (int, char*[]) {
   int end = 0;
   read_();
   end = nodes.size() - 1;
-  
-  clock_t begintime = clock();
+  //typedef std::chrono::high_resolution_clock clock;
+
+  std::chrono::time_point<std::chrono::system_clock> start1, end1;
+  start1 = std::chrono::high_resolution_clock::now();
+
   Dijkstra<Graph, LengthMap> dijkstra_test(g,len);
-
   dijkstra_test.run(nodes[begin]);
-  clock_t endtime = clock();
-  double elapsed_time = (double)(endtime - begintime) / CLOCKS_PER_SEC;
-  std::cout << elapsed_time  << " " << end + 1 << endl;//<< " " << dijkstra_test.dist(nodes[end]) << std::endl;
 
+  end1 = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end1-start1;
+  //std::time_t end_time = std::chrono::system_clock::to_time_t(end1);
+
+  std::cout << elapsed_seconds.count() << " " << end + 1 << endl;//<< " " << dijkstra_test.dist(nodes[end]) << std::endl;
 /*for (Node v=nodes[end];v != nodes[begin]; v=dijkstra_test.predNode(v)) {
   std::cout << g.id(v) << "<-";
 }*/

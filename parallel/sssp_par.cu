@@ -4,7 +4,7 @@
 #include <ctime>
 #include <stdio.h>
 #define TPB 1024
-#define INF 9999
+#define INF 99999999
 
 using namespace std;
 struct Node {
@@ -91,45 +91,16 @@ void DA2CF(unsigned int *c_dev,
 
   intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
   unsigned int mssp = 0;
-  unsigned int count = 0;
   while (mssp != INF) {
     cudaMemcpy( mssp_dev, mssp_dev_val, sizeof(unsigned int), cudaMemcpyHostToDevice);
     relax_f<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
     minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp_dev, N);
     cudaMemcpy( &mssp, mssp_dev, sizeof(unsigned int), cudaMemcpyDeviceToHost);
     update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp_dev, N);
-    count++;
-  }
-  //printf("%d\n", count);
-  cudaFree(&mssp_dev);
-}
-
-void DA2CF_min(unsigned int *c_dev, 
-           bool *u_dev, bool *f_dev, 
-           unsigned int *e_dev, 
-           unsigned int *w_dev,
-           Node *v_dev,
-           unsigned int N,
-           vector<unsigned int> P) {
-  unsigned int extrablock = N % TPB > 0 ? 1 : 0;
-  unsigned int *mssp_dev;
-  unsigned int mssp_dev_val[1] = {INF};
-  cudaMalloc( (void**)&mssp_dev, sizeof(unsigned int) );
-
-  intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
-  unsigned int mssp = 0;
-  unsigned int count = 0;
-  for (int i = 0; i < P.size(); i++) {
-    mssp_dev_val[0] = P[i];
-    cudaMemcpy( mssp_dev, mssp_dev_val, sizeof(unsigned int), cudaMemcpyHostToDevice);
-    relax_f<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
-    //minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp_dev, N);
-    cudaMemcpy( &mssp, mssp_dev, sizeof(unsigned int), cudaMemcpyDeviceToHost);
-    update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp_dev, N);
-    count++;
   }
   cudaFree(&mssp_dev);
 }
+
 int main() {
   unsigned int N;
   unsigned int degree;
@@ -175,18 +146,16 @@ int main() {
   cudaMemcpy( w_dev, w_host.data(), M * sizeof(unsigned int), cudaMemcpyHostToDevice);
 
   // execute dijkstra compound frontiers
-  clock_t st = clock();
+  cudaEvent_t start, stop;
+  float elapsedTime;
+  cudaEventCreate(&start);
+  cudaEventRecord(start, 0);
   DA2CF(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
-  clock_t en = clock();
-  double res = (double)(en - st) / CLOCKS_PER_SEC;
-
-  // execute dijkstra compound frontiers
-  //clock_t st1 = clock();
-  //DA2CF_min(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
-  //clock_t en1 = clock();
-  //double res1 = (double)(en1 - st1) / CLOCKS_PER_SEC;
-
-  cout << res << " " << N << endl;
+  cudaEventCreate(&stop);
+  cudaEventRecord(stop,0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&elapsedTime, start, stop);
+  cout << elapsedTime/1000.0f << " " << N << endl;
 
   // free allocated memory on the GPU
   cudaFree(c_dev);

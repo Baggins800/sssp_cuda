@@ -12,13 +12,13 @@
     xlabel=vector size (N),
     ylabel=time(s)] 
  %     \addplot table [y=P, x=$Q_{Original}$]{dijkstra_original.out};
-      \addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
+      %\addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
       \addplot table [y=P, x=$Q_{CUDA}$]{dijkstra_parallel.out};
       \addplot table [y=P, x=$Q_{CUDA_fastest}$]{dijkstra_parallel_fastest.out};
  
       \addplot table [y=P, x=$Q_{CUDA}$]{dynamic_parallelism.out};
      % \addlegendentry{$Q_{Original}$ Serial Dijkstra}
-      \addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
+      %\addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
       \addlegendentry{$Q_{CUDA}$ CUDA}
       \addlegendentry{$Q_{CUDA_fastest}$ CUDA}
       \addlegendentry{$Q_{CUDA}$ CUDA dynamic Parallelism}
@@ -31,9 +31,9 @@
     xlabel=vector size (N),
     ylabel=time(s)] 
       \addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
-      \addplot table [y=P, x=$Q_{CUDA}$]{dynamic_parallelism.out};
+      %\addplot table [y=P, x=$Q_{CUDA}$]{dynamic_parallelism.out};
       \addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
-      \addlegendentry{$Q_{CUDA}$ CUDA}
+      %\addlegendentry{$Q_{CUDA}$ CUDA}
     \end{axis}
 
   \end{tikzpicture}
@@ -42,9 +42,9 @@
     \begin{axis}[
     xlabel=vector size (N),
     ylabel=time(s)] 
-      %\addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
+      \addplot table [y=P, x=$Q_{Lemon}$]{dijkstra_lemon.out};
       \addplot table [y=P, x=$Q_{CUDA}$]{dynamic_parallelism.out};
-      %\addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
+      \addlegendentry{$Q_{Lemon}$ Lemon Dijkstra}
       \addlegendentry{$Q_{CUDA}$ CUDA}
     \end{axis}
 

@@ -3,8 +3,8 @@
 #include <vector>
 #include <ctime>
 #include <stdio.h>
-#define TPB 256
-#define INF 9999
+#define TPB 1024
+#define INF 99999999
 
 using namespace std;
 struct Node {
@@ -28,6 +28,23 @@ __global__ void intialize(unsigned int *c_dev,
     u_dev[tid] = false;
   }
 }
+__global__ void relax_adj(unsigned int *c_dev, 
+                          Node * v_dev, 
+                          unsigned int *e_dev,
+                          unsigned int *w_dev,
+                          bool *u_dev,
+                          unsigned int tid, 
+                          unsigned int istart, 
+                          unsigned int N) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if ( i < v_dev[tid].adj) {
+    unsigned int succ = e_dev[i + istart];
+    if (u_dev[succ]) {
+      atomicMin(&c_dev[succ], c_dev[tid] + w_dev[i + istart]);
+    }
+  }
+ 
+}
 __global__ void relax_f(unsigned int *c_dev,
                         bool *u_dev,
                         bool *f_dev,
@@ -35,6 +52,7 @@ __global__ void relax_f(unsigned int *c_dev,
                         unsigned int *w_dev,
                         Node *v_dev,
                         unsigned int N) {
+
   unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid < N) {
     if (f_dev[tid]) {
@@ -46,6 +64,12 @@ __global__ void relax_f(unsigned int *c_dev,
           atomicMin(&c_dev[succ], c_dev[tid] + w_dev[i]);
         }
       }
+      //int blocks = v_dev[tid].adj / TPB + 1;
+      //relax_adj<<<blocks, TPB>>>(c_dev, v_dev, e_dev, 
+      //                           w_dev, u_dev, tid,
+      //                           v_dev[tid].start, N);
+
+    //cudaDeviceSynchronize();
     }
   }
 }
@@ -77,22 +101,22 @@ __global__ void DA2CF(unsigned int *c_dev,
            unsigned int *w_dev,
            Node *v_dev,
            unsigned int N, vector<unsigned int> &P) {
+
   unsigned int extrablock = N % TPB > 0 ? 1 : 0;
-  unsigned int counter = 0;
   intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
-  //printf("%d\n",(int) f_dev[0]);
+  cudaDeviceSynchronize();
   while (mssp != INF) {
-    counter++;
     mssp = INF;
     relax_f<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
-  cudaDeviceSynchronize(); 
-    minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp, N);
     cudaDeviceSynchronize();
-    __syncthreads();
+    minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp, N);   
+    cudaDeviceSynchronize();
     update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp, N);
-    __syncthreads();
+    cudaDeviceSynchronize();
   }
-  //printf("%d\n", counter);
+  //for (int i = 0; i < N; i++) {
+  // printf("%d ", c_dev[i]);
+  //}
 }
 
 int main() {
@@ -126,10 +150,6 @@ int main() {
     v_host[z].adj = dec;
     dec--;
   }
-  
-
-  
-
   // allocate frontiers, unresolved and cost vectors on the GPU
   cudaMalloc( (void**)&c_dev, N * sizeof(unsigned int) ); 
   cudaMalloc( (void**)&f_dev, N * sizeof(bool) ); 
@@ -141,21 +161,19 @@ int main() {
   // copy data to GPU memory
   cudaMemcpy( v_dev, v_host.data(), N * sizeof(Node), cudaMemcpyHostToDevice);
   cudaMemcpy( e_dev, e_host.data(), M * sizeof(unsigned int), cudaMemcpyHostToDevice);
-
-  clock_t st = clock();
-
-  cudaDeviceSynchronize();
   cudaMemcpy( w_dev, w_host.data(), M * sizeof(unsigned int), cudaMemcpyHostToDevice);
+  cudaEvent_t start, stop;
+  float elapsedTime;
+  cudaEventCreate(&start);
+  cudaEventRecord(start,0);
   // execute dijkstra compound frontiers
-
-
-
   DA2CF<<<1,1>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
-  clock_t en = clock();
-  double res = (double)(en - st) / CLOCKS_PER_SEC;
+  cudaEventCreate(&stop);
+  cudaEventRecord(stop,0);
+  cudaEventSynchronize(stop);
 
-  cudaDeviceSynchronize();
-  cout << res << " " << N << endl;
+  cudaEventElapsedTime(&elapsedTime, start,stop);
+  cout << elapsedTime/1000.0f << " " << N << endl;
 
   // free allocated memory on the GPU
   cudaFree(c_dev);

@@ -20,7 +20,7 @@ int main() {
   for (int i = 0; i < nodes; i++) {
     for (int a = 1; a < degree + 1; a++) {
       if (a + i < nodes) {
-        cout << i << " " << i + a << " " << rand() % 100 + 1<< endl;
+        cout << i << " " << i + a << " " << rand() % 10 + 1<< endl;
       }
     }
   }
