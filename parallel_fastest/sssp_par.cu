@@ -108,11 +108,14 @@ void DA2CF(unsigned int *c_dev,
   cudaMalloc( (void**)&mssp_dev, sizeof(unsigned int) );
   cudaMalloc( (void**)&dev_min_list, blocks * sizeof(unsigned int) );
   intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
+  cudaDeviceSynchronize();
   unsigned int mssp = 0;
   while (mssp != INF) {
     mssp = INF;
     relax_f<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
+    cudaDeviceSynchronize();
     minimum<<< blocks, TPB >>>(c_dev, u_dev, dev_min_list, N);
+    cudaDeviceSynchronize();
     thrust::device_ptr<unsigned int> dev_ptr = thrust::device_pointer_cast(dev_min_list);
     thrust::device_ptr<unsigned int> min_ptr = 
     thrust::min_element(dev_ptr, dev_ptr + blocks);
@@ -121,6 +124,7 @@ void DA2CF(unsigned int *c_dev,
     mssp = min_value[0];
     cudaMemcpy( mssp_dev, &min_value, sizeof(unsigned int), cudaMemcpyHostToDevice);
     update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp_dev, N);
+    cudaDeviceSynchronize();
   }
   cudaFree(&dev_min_list);
   cudaFree(&mssp_dev);

@@ -3,7 +3,7 @@
 #include <vector>
 #include <ctime>
 #include <stdio.h>
-#define TPB 1024
+#define TPB 32
 #define INF 99999999
 
 using namespace std;

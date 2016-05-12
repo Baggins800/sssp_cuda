@@ -90,13 +90,19 @@ void DA2CF(unsigned int *c_dev,
   cudaMalloc( (void**)&mssp_dev, sizeof(unsigned int) );
 
   intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
+
+  cudaDeviceSynchronize();
   unsigned int mssp = 0;
   while (mssp != INF) {
     cudaMemcpy( mssp_dev, mssp_dev_val, sizeof(unsigned int), cudaMemcpyHostToDevice);
     relax_f<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
+
+    cudaDeviceSynchronize();
     minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp_dev, N);
+    cudaDeviceSynchronize();
     cudaMemcpy( &mssp, mssp_dev, sizeof(unsigned int), cudaMemcpyDeviceToHost);
     update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp_dev, N);
+    cudaDeviceSynchronize();
   }
   cudaFree(&mssp_dev);
 }
