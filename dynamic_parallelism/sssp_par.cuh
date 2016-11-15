@@ -100,17 +100,19 @@ __global__ void DA2CF(unsigned int *c_dev,
            unsigned int *w_dev,
            Node *v_dev,
            unsigned int N, vector<unsigned int> &P) {
-
-  unsigned int extrablock = N % TPB > 0 ? 1 : 0;
-  intialize<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, N);
-  cudaDeviceSynchronize();
-  while (mssp != INF) {
-    mssp = INF;
-    relax_f<<<N / TPB + extrablock, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N);
+  unsigned int idx = threadIdx.x + blockDim.x * blockIdx.x;
+  if (idx < N) {
+    unsigned int extrablock = N % TPB > 0 ? 1 : 0;
+    intialize<<<N / TPB + extrablock, TPB>>>(c_dev + idx * N, u_dev, f_dev, N);
     cudaDeviceSynchronize();
-    minimum<<< N / TPB + extrablock, TPB >>>(c_dev, u_dev, mssp, N);   
-    cudaDeviceSynchronize();
-    update<<< N / TPB + extrablock, TPB >>>(c_dev, f_dev, u_dev, mssp, N);
-    cudaDeviceSynchronize();
+    while (mssp != INF) {
+      mssp = INF;
+      relax_f<<<N / TPB + extrablock, TPB>>>(c_dev + idx * N, u_dev, f_dev, e_dev, w_dev, v_dev, N);
+      cudaDeviceSynchronize();
+      minimum<<< N / TPB + extrablock, TPB >>>(c_dev + idx * N, u_dev, mssp, N);   
+      cudaDeviceSynchronize();
+      update<<< N / TPB + extrablock, TPB >>>(c_dev + idx * N, f_dev, u_dev, mssp, N);
+      cudaDeviceSynchronize();
+    }
   }
 }

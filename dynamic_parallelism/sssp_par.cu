@@ -32,7 +32,7 @@ int main() {
     dec--;
   }
   // allocate frontiers, unresolved and cost vectors on the GPU
-  cudaMalloc( (void**)&c_dev, N * sizeof(unsigned int) ); 
+  cudaMalloc( (void**)&c_dev, N * N * sizeof(unsigned int) ); 
   cudaMalloc( (void**)&f_dev, N * sizeof(bool) ); 
   cudaMalloc( (void**)&u_dev, N * sizeof(bool) );
   cudaMalloc( (void**)&v_dev, N * sizeof(Node) );
@@ -48,7 +48,8 @@ int main() {
   cudaEventCreate(&start);
   cudaEventRecord(start,0);
   // execute dijkstra compound frontiers
-  DA2CF<<<1,1>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
+  int extra_block = N % TPB > 0 ? 1 : 0;
+  DA2CF<<<N / TPB + extra_block, TPB>>>(c_dev, u_dev, f_dev, e_dev, w_dev, v_dev, N, P);
   cudaEventCreate(&stop);
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);

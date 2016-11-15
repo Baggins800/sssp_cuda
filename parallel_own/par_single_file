@@ -1,0 +1,3 @@
+rm ./a.out
+nvcc sssp_par.cu
+./a.out < data/1.in
