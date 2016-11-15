@@ -1,14 +1,18 @@
 g++ input.cpp -O2
+rm -r data/
+mkdir data
 START=1
 MAX=$1
 DEGREE=$2
 STEPS=$3
+DIRECT=$4
 while [ $START -le $MAX ]
 do
   NODES="$(( $STEPS * $START ))"
   echo "$NODES" >> "data/$START.txt"
   echo "$DEGREE" >> "data/$START.txt"
-  ./a.out < "data/$START.txt" >> "data/$START.in"
+  echo "$DIRECT" >> "data/$START.txt"
+  ./a.out < "data/$START.txt" > "data/$START.in"
   (( START++ ))
 done
 

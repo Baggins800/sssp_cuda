@@ -33,8 +33,8 @@ int main() {
   }
   // allocate frontiers, unresolved and cost vectors on the GPU
   cudaMalloc( (void**)&c_dev, N * N * sizeof(unsigned int) ); 
-  cudaMalloc( (void**)&f_dev, N * sizeof(bool) ); 
-  cudaMalloc( (void**)&u_dev, N * sizeof(bool) );
+  cudaMalloc( (void**)&f_dev, N * N * sizeof(bool) ); 
+  cudaMalloc( (void**)&u_dev, N * N * sizeof(bool) );
   cudaMalloc( (void**)&v_dev, N * sizeof(Node) );
   cudaMalloc( (void**)&e_dev, M * sizeof(unsigned int) );
   cudaMalloc( (void**)&w_dev, M * sizeof(unsigned int) );
