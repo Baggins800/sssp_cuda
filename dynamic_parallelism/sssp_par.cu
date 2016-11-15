@@ -7,7 +7,6 @@ int main() {
   cin >> N;
   cin >> degree;
   cin >> M;
-  //vector<unsigned int> c_host(N * N);
   vector<Node> v_host(N);
   vector<unsigned int> e_host(M);
   vector<unsigned int> w_host(M);
@@ -55,11 +54,8 @@ int main() {
   cudaEventCreate(&stop);
   cudaEventRecord(stop,0);
   cudaEventSynchronize(stop);
-
   cudaEventElapsedTime(&elapsedTime, start,stop);
   cout << elapsedTime/1000.0f << " " << N << endl;
-
-
   cudaMemcpy( c_host, c_dev, N * N * sizeof(unsigned int), cudaMemcpyDeviceToHost);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {

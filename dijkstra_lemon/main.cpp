@@ -49,7 +49,9 @@ int main (int, char*[]) {
   start1 = std::chrono::high_resolution_clock::now();
 
   Dijkstra<Graph, LengthMap> dijkstra_test(g,len);
-  dijkstra_test.run(nodes[begin]);
+  for (int i = 0; i < nodes.size(); i++) { 
+    dijkstra_test.run(nodes[i]);
+  }
 
   end1 = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed_seconds = end1-start1;

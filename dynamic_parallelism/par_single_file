@@ -1,3 +1,5 @@
+# !/bin/bash
 rm ./a.out nvresult.nvvp
 nvcc -arch=sm_52 -rdc=true --compiler-options -std=c++98 sssp_par.cu -O2
-nvprof -o nvresult.nvvp ./a.out < data/1.in
+#nvprof -o nvresult.nvvp ./a.out < data/1.in > data/1.out
+./a.out < data/1.in > data/1.out

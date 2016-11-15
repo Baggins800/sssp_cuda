@@ -3,8 +3,8 @@
 #include <vector>
 #include <ctime>
 #include <stdio.h>
-#define TPB 32
-#define INF 99999
+#define TPB 512
+#define INF 999999999
 
 using namespace std;
 struct Node {
