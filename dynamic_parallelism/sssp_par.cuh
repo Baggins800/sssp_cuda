@@ -59,7 +59,6 @@ __global__ void update(unsigned int * c_dev,
                        unsigned int mssp, unsigned int N, unsigned int idx) {
   unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
   if (tid < N) {
-   // printf("%d \n", mssp);
     f_dev[tid + idx] = false;
     if (c_dev[tid + idx] == mssp) {
       u_dev[tid + idx] = false;
