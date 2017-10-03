@@ -27,6 +27,8 @@ In graph theory, the shortest path problem is the problem of finding a path betw
 
 Dijkstra's algorithm is an algorithm for finding the shortest paths between nodes in a graph, which may represent, for example, road networks. It was conceived by computer scientist Edsger W. Dijkstra in 1956 and published three years later.
 
+This experiment is an implementation of [CUDA Solutions for the SSSP Problem](https://link.springer.com/chapter/10.1007%2F978-3-642-01970-8_91)
+
 Input
 ----------
 Run the `experiment` script with parameters `MAX`, `DEGREE`, `STEPS`.
