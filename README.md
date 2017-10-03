@@ -46,4 +46,4 @@ P $Q_n$
 ```
 
 Results will be generated and displayed with evince.
-In the main directory, the graphs are stored in main.pdf
+The results can be found in main.pdf
