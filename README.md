@@ -9,7 +9,7 @@ Atleast 4096MiB host Random access memory.
 Atleast 20GiB free harddrive space.
 ```
 Software Requirements
----------------------
+----------
 Linux is required to use the scripts.
 The experiments were done with Arch Linux.
 ```
@@ -18,6 +18,7 @@ sudo pacman -S texlive-most
 sudo pacman -S nvidia nvidia-utils cuda
 ```
 Also, install lemon by following the instructions on http://lemon.cs.elte.hu/trac/lemon.
+
 Background
 ----------
 In mathematics and computer science, graph theory is the study of graphs, which are mathematical structures used to model pairwise relations between objects. A graph in this context is made up of vertices, nodes, or points which are connected by edges, arcs, or lines. A graph may be undirected, meaning that there is no distinction between the two vertices associated with each edge, or its edges may be directed from one vertex to another; see Graph (discrete mathematics) for more detailed definitions and for other variations in the types of graph that are commonly considered. Graphs are one of the prime objects of study in discrete mathematics.
